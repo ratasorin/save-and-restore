@@ -3,7 +3,11 @@ import { HexColorPicker as ColorPicker } from "react-colorful";
 import { TextField } from "@mui/material";
 import { Button } from "@mui/material";
 import { Record, State } from "../shared";
-import { addRecord, updateRecords } from "../src/slices/records.slice";
+import {
+  addRecord,
+  selectRecord,
+  updateRecords,
+} from "../src/slices/records.slice";
 import { useAppDispatch, useAppSelector } from "../src/hooks/redux";
 
 interface RecordsSSR {
@@ -62,12 +66,22 @@ const Home: FC<RecordsSSR> = ({ recordsDB }) => {
           >
             Restore
           </Button>
-          <div className="left-1/2 absolute w-56 mt-5 -translate-x-1/2">
+          <div className="left-1/2 z-50 absolute w-80 mt-5 max-h-96 overflow-y-scroll -translate-x-1/2">
             {open &&
-              records.map((record) => (
-                <div className="bg-white p-3 flex flex-col break-all shadow-xl">
-                  <p>{record.state.color}</p>
-                  <p>{record.state.title}</p>
+              records.map((record, index) => (
+                <div
+                  onClick={() => {
+                    dispatch(selectRecord(index));
+                    setOpen(false);
+                  }}
+                  className="bg-white hover:cursor-pointer hover:border-2 border-black p-3 flex flex-col shadow-xl"
+                >
+                  <p>Color: {record.state.color}</p>
+                  <p>Header: {record.state.title}</p>
+                  <hr />
+                  <p className="text-xs pt-1 text-slate-500">
+                    edited at: {new Date(record.created_at).toLocaleString()}
+                  </p>
                 </div>
               ))}
           </div>
@@ -85,6 +99,7 @@ const Home: FC<RecordsSSR> = ({ recordsDB }) => {
             id="standard-basic"
             label="Standard"
             variant="standard"
+            value={title}
             onChange={(event) => {
               setTitle(event.target.value);
             }}

@@ -23,4 +23,4 @@ const records = createSlice({
 });
 
 export default records.reducer;
-export const { addRecord, updateRecords } = records.actions;
+export const { addRecord, updateRecords, selectRecord } = records.actions;
