@@ -96,8 +96,7 @@ const Home: FC<RecordsSSR> = ({ recordsDB }) => {
         <ColorPicker color={color} onChange={setColor} />
         <div className="w-auto h-auto bg-white p-3 rounded-lg shadow-md">
           <TextField
-            id="standard-basic"
-            label="Standard"
+            label="Try writing something"
             variant="standard"
             value={title}
             onChange={(event) => {
