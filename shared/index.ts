@@ -13,7 +13,12 @@ export interface Record {
   created_at: Date;
 }
 
+export interface RecordFromSSR {
+  state: State;
+  created_at: string;
+}
+
 export interface UserRecords {
-  records: Record[];
+  records: RecordFromSSR[];
   index: number;
 }

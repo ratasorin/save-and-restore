@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from "react";
 import { HexColorPicker as ColorPicker } from "react-colorful";
 import { TextField } from "@mui/material";
 import { Button } from "@mui/material";
-import { Record, State } from "../shared";
+import { Record, RecordFromSSR, State } from "../shared";
 import {
   addRecord,
   selectRecord,
@@ -10,10 +10,10 @@ import {
 } from "../src/slices/records.slice";
 import { useAppDispatch, useAppSelector } from "../src/hooks/redux";
 import { GetServerSideProps } from "next";
-import { url } from "../server/config";
+import { prisma } from "../prisma";
 
 interface RecordsSSR {
-  recordsDB: Record[];
+  recordsDB: RecordFromSSR[];
 }
 
 const Home: FC<RecordsSSR> = ({ recordsDB }) => {
@@ -50,7 +50,10 @@ const Home: FC<RecordsSSR> = ({ recordsDB }) => {
             const state: State = { color, title };
             const record: Record = { created_at: new Date(), state };
             dispatch(
-              addRecord({ created_at: new Date(), state: { color, title } })
+              addRecord({
+                created_at: new Date().toISOString(),
+                state: { color, title },
+              })
             );
             fetch("/api/records/save", {
               method: "POST",
@@ -68,7 +71,7 @@ const Home: FC<RecordsSSR> = ({ recordsDB }) => {
           >
             Restore
           </Button>
-          <div className="left-1/2 z-50 absolute w-80 mt-5 max-h-96 overflow-y-scroll -translate-x-1/2">
+          <div className="left-1/2 z-50 absolute w-80 mt-5 max-h-96 overflow-y-auto -translate-x-1/2">
             {open &&
               records.map((record, index) => (
                 <div
@@ -112,12 +115,43 @@ const Home: FC<RecordsSSR> = ({ recordsDB }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const response = await fetch(`${url}/api/records/get`);
-  const recordsDB: Record[] = await response.json();
+  try {
+    const recordsDB = await prisma.record.findMany({});
 
-  return {
-    props: { recordsDB },
-  };
+    console.log({ recordsDB });
+
+    const serializedRecords = recordsDB.map((r) => ({
+      state: JSON.parse(r.state) as State,
+      created_at: r.created_at.toISOString(),
+    }));
+
+    if (!serializedRecords.length)
+      serializedRecords.push({
+        created_at: new Date().toISOString(),
+        state: { color: "#574888", title: "Welcome back !" },
+      });
+
+    return {
+      props: {
+        recordsDB: serializedRecords,
+      },
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      props: {
+        recordsDB: [
+          {
+            created_at: new Date().toISOString(),
+            state: JSON.stringify({
+              color: "#574888",
+              title: "Welcome back !",
+            }),
+          },
+        ],
+      },
+    };
+  }
 };
 
 export default Home;

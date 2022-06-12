@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Record, UserRecords } from "../../shared";
+import { Record, RecordFromSSR, UserRecords } from "../../shared";
 
 const initialState: UserRecords = {
   index: 0,
@@ -11,7 +11,7 @@ const records = createSlice({
   name: "userRecords",
   reducers: {
     updateRecords: (_, action: PayloadAction<UserRecords>) => action.payload,
-    addRecord: (state, action: PayloadAction<Record>) => ({
+    addRecord: (state, action: PayloadAction<RecordFromSSR>) => ({
       index: state.records.length,
       records: [...state.records, action.payload],
     }),
