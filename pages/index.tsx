@@ -9,6 +9,8 @@ import {
   updateRecords,
 } from "../src/slices/records.slice";
 import { useAppDispatch, useAppSelector } from "../src/hooks/redux";
+import { GetServerSideProps } from "next";
+import { url } from "../server/config";
 
 interface RecordsSSR {
   recordsDB: Record[];
@@ -109,13 +111,13 @@ const Home: FC<RecordsSSR> = ({ recordsDB }) => {
   );
 };
 
-export async function getServerSideProps() {
-  const response = await fetch("http://localhost:3001/api/records/get");
+export const getServerSideProps: GetServerSideProps = async () => {
+  const response = await fetch(`${url}/api/records/get`);
   const recordsDB: Record[] = await response.json();
 
   return {
     props: { recordsDB },
   };
-}
+};
 
 export default Home;
